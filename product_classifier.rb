@@ -65,20 +65,24 @@ def check_string(string, dialect_dictionary)
   found_match
 end
 
+def classify_product(product, has_american_words, has_british_words, classification_dictionary)
+  case
+  when has_british_words && has_american_words
+    classification_dictionary[:mixed].push(product.id)
+  when !has_british_words && !has_american_words
+    classification_dictionary[:unknown].push(product.id)
+  when has_british_words
+    classification_dictionary[:british].push(product.id)
+  when has_american_words
+    classification_dictionary[:american].push(product.id)
+  end
+end
+
 result.data.products.each do |product|
     has_american_words = check_for_dictionary_words(product, american_words)
     has_british_words = check_for_dictionary_words(product, british_words)
     result_classification.push({ id: product.id, british_words: has_british_words, american_words: has_american_words, mixed: (has_british_words && has_american_words), unknown: (!has_british_words && !has_american_words) })
-    case
-    when has_british_words && has_american_words
-      product_classification[:mixed].push(product.id)
-    when !has_british_words && !has_american_words
-      product_classification[:unknown].push(product.id)
-    when has_british_words
-      product_classification[:british].push(product.id)
-    when has_american_words
-      product_classification[:american].push(product.id)
-    end
+    classify_product(product, has_american_words, has_british_words, product_classification)
 end
 
 # puts result_classification
