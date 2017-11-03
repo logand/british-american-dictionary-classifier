@@ -46,10 +46,7 @@ GRAPHQL
 result = Client.query(ProductLookupQuery, variables: { "productIds": product_numbers })
 
 def check_for_dictionary_words(product, dialect_dictionary)
-  found_match = false
-  found_match = check_string(product.name, dialect_dictionary)
-
-  found_match = check_string(product.description, dialect_dictionary)
+  check_string(product.name, dialect_dictionary) || check_string(product.description, dialect_dictionary)
 end
 
 def check_string(string, dialect_dictionary)
