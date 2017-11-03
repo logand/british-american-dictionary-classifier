@@ -1,5 +1,6 @@
 require "graphql/client"
 require "graphql/client/http"
+require "linguistics"
 require "httparty"
 require "loofah"
 require "pry"
@@ -25,6 +26,8 @@ product_numbers = File.open("data/products.txt").map { |line| line.to_i }
 
 result_classification = []
 product_classification = { british: [], american: [], mixed: [], unknown: [] }
+
+Linguistics.use( :en )
 
 # american_words_map = american_words.map { |word| [word, true] }.to_h
 # british_words_map = british_words.map { |word| [word, true] }.to_h
@@ -82,11 +85,29 @@ end
 
 def check_string_with_matches(string, dialect_dictionary)
   matches = string.split(" ").reduce([]) do |match_arr, word|
+    substring_matches = []
     word_matches = dialect_dictionary.select do |comparison_word|
-                     word.include? comparison_word
+                     substring_matches.push(comparison_word) if word.include? comparison_word
+                     compare_strings(word, comparison_word)
                    end
-    match_arr.push({ word: word, matches: word_matches }) if word_matches.length > 0
+    match_arr.push({ word: word, matches: word_matches, substring_matches: substring_matches }) if word_matches.length > 0 || substring_matches.length > 0
     match_arr
+  end
+end
+
+def compare_strings(word, dictionary_word)
+  comparison_word = word.gsub(/[^[:alpha:]]/i, '')
+
+  # Match the word, pluralized form, past tense form
+  case comparison_word
+  when dictionary_word
+    true
+  when dictionary_word.en.plural
+    true
+  when dictionary_word.en.past_tense
+    true
+  else
+    false
   end
 end
 
@@ -107,9 +128,11 @@ end
 
 result.data.products.each do |product|
     american_matches = check_for_dictionary_words_with_matches(product, american_words)
-    has_american_words = american_matches.length > 0
+    match_sum = american_matches.map { |match_obj| match_obj[:matches].length }
+    has_american_words = match_sum.sum > 0
     british_matches = check_for_dictionary_words_with_matches(product, british_words)
-    has_british_words = british_matches.length > 0
+    match_sum = british_matches.map { |match_obj| match_obj[:matches].length }
+    has_british_words = match_sum.sum > 0
     classification = classify_product(product, has_american_words, has_british_words, product_classification)
     product_classification[classification.to_sym].push(product.id)
     result_classification.push({ id: product.id, american_matches: american_matches, british_matches: british_matches, classification: classification })
