@@ -71,24 +71,48 @@ def check_string(string, dialect_dictionary)
   found_match
 end
 
+# Alternatives for logical checks/testing
+
+def check_for_dictionary_words_with_matches(product, dialect_dictionary)
+  name = Loofah.fragment(product.name).text
+  description = Loofah.fragment(product.description).text
+  matches = check_string_with_matches(name, dialect_dictionary)
+  matches + check_string_with_matches(description, dialect_dictionary)
+end
+
+def check_string_with_matches(string, dialect_dictionary)
+  matches = string.split(" ").reduce([]) do |match_arr, word|
+    word_matches = dialect_dictionary.select do |comparison_word|
+                     word.include? comparison_word
+                   end
+    match_arr.push({ word: word, matches: word_matches }) if word_matches.length > 0
+    match_arr
+  end
+end
+
+###
+
 def classify_product(product, has_american_words, has_british_words, classification_dictionary)
   case
   when has_british_words && has_american_words
-    classification_dictionary[:mixed].push(product.id)
+    "mixed"
   when !has_british_words && !has_american_words
-    classification_dictionary[:unknown].push(product.id)
+    "unknown"
   when has_british_words
-    classification_dictionary[:british].push(product.id)
+    "british"
   when has_american_words
-    classification_dictionary[:american].push(product.id)
+    "american"
   end
 end
 
 result.data.products.each do |product|
-    has_american_words = check_for_dictionary_words(product, american_words)
-    has_british_words = check_for_dictionary_words(product, british_words)
-    result_classification.push({ id: product.id, british_words: has_british_words, american_words: has_american_words, mixed: (has_british_words && has_american_words), unknown: (!has_british_words && !has_american_words) })
-    classify_product(product, has_american_words, has_british_words, product_classification)
+    american_matches = check_for_dictionary_words_with_matches(product, american_words)
+    has_american_words = american_matches.length > 0
+    british_matches = check_for_dictionary_words_with_matches(product, british_words)
+    has_british_words = british_matches.length > 0
+    classification = classify_product(product, has_american_words, has_british_words, product_classification)
+    product_classification[classification.to_sym].push(product.id)
+    result_classification.push({ id: product.id, american_matches: american_matches, british_matches: british_matches, classification: classification })
 end
 
 # puts result_classification
