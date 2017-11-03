@@ -32,7 +32,7 @@ class Classifier
     classification_item[:strings].each do |string|
       classifications = string.split(" ").reduce([]) do |match_arr, word|
                                 break match_arr if match_arr.length > 1
-                                match_arr += check_word(word)
+                                match_arr += check_word_for_dictionary_match(word)
                                 match_arr.uniq
                               end
       item_classifications = (item_classifications + classifications).uniq
@@ -41,7 +41,7 @@ class Classifier
     classify_item(classification_item[:id], item_classifications)
   end
 
-  def check_word(word)
+  def check_word_for_dictionary_match(word)
     matches = []
     word = Classifier.strip_word_for_comparison(word)
     if word.length > 0
