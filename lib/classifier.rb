@@ -63,7 +63,7 @@ class Classifier
   end
 
   def to_s
-    "The results of analyzing the words in each product lead us to classify them as follows: #{@classifications}"
+    "The results of analyzing each item leads us to classify them as follows: #{@classifications}"
   end
 
 end
