@@ -1,6 +1,7 @@
 require "graphql/client"
 require "graphql/client/http"
 require "httparty"
+require "loofah"
 require "pry"
 
 GIST_URL = "https://gist.github.com/mdg/aa4c9070ff3dbeaa5d4613cba05c2faf"
@@ -9,9 +10,15 @@ BRITISH_URL = GIST_URL + "/raw/british-words.txt"
 
 # Get American and British Word Lists
 response = HTTParty.get(AMERICAN_URL)
-american_words = response.body.split("\n").map(&:strip).reject(&:empty?)
+american_words = response.body.split("\n").lazy
+                                          .map(&:strip)
+                                          .reject(&:empty?)
+                                          .force
 response = HTTParty.get(BRITISH_URL)
-british_words = response.body.split("\n").map(&:strip).reject(&:empty?)
+british_words = response.body.split("\n").lazy
+                                         .map(&:strip)
+                                         .reject(&:empty?)
+                                         .force
 
 # Get Products for Classification
 product_numbers = File.open("data/products.txt").map { |line| line.to_i }
@@ -46,7 +53,9 @@ GRAPHQL
 result = Client.query(ProductLookupQuery, variables: { "productIds": product_numbers })
 
 def check_for_dictionary_words(product, dialect_dictionary)
-  check_string(product.name, dialect_dictionary) || check_string(product.description, dialect_dictionary)
+  name = Loofah.fragment(product.name).text
+  description = Loofah.fragment(product.description).text
+  check_string(name, dialect_dictionary) || check_string(description, dialect_dictionary)
 end
 
 def check_string(string, dialect_dictionary)
