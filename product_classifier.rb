@@ -1,10 +1,23 @@
 require "graphql/client"
 require "graphql/client/http"
+require "httparty"
 require "pry"
 
+GIST_URL = "https://gist.github.com/mdg/aa4c9070ff3dbeaa5d4613cba05c2faf"
+AMERICAN_URL = GIST_URL + "/raw/american-words.txt"
+BRITISH_URL = GIST_URL + "/raw/british-words.txt"
+
+# Get American and British Word Lists
+response = HTTParty.get(AMERICAN_URL)
+american_words = response.body.split("\n").map(&:strip).reject(&:empty?)
+response = HTTParty.get(BRITISH_URL)
+british_words = response.body.split("\n").map(&:strip).reject(&:empty?)
+
+# Get Products for Classification
 product_numbers = File.open("data/products.txt").map { |line| line.to_i }
-american_words = File.open("data/american-words.txt").map { |line| line.strip }
-british_words = File.open("data/british-words.txt").map { |line| line.strip }
+
+result_classification = []
+product_classification = { british: [], american: [], mixed: [], unknown: [] }
 
 # american_words_map = american_words.map { |word| [word, true] }.to_h
 # british_words_map = british_words.map { |word| [word, true] }.to_h
@@ -31,9 +44,6 @@ query($productIds: [ID]!) {
 GRAPHQL
 
 result = Client.query(ProductLookupQuery, variables: { "productIds": product_numbers })
-
-result_classification = []
-product_classification = { british: [], american: [], mixed: [], unknown: [] }
 
 def check_for_dictionary_words(product, dialect_dictionary)
   found_match = false
