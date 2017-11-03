@@ -1,6 +1,12 @@
 # british-american-dictionary-classifier
 
-To run the program use `ruby product_classifier.rb`
+To run the program, use the following commands:
+```sh
+gem install bundler
+bundle install
+ruby product_classifier.rb
+
+```
 
 This program is a solution to the problem outlined in this [Gist](https://gist.github.com/mdg/aa4c9070ff3dbeaa5d4613cba05c2faf).
 

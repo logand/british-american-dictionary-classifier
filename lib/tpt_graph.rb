@@ -1,3 +1,6 @@
+require "graphql/client"
+require "graphql/client/http"
+
 module TPT_GRAPH
   HTTP = GraphQL::Client::HTTP.new("https://www.teacherspayteachers.com/graph/graphql")
 

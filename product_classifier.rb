@@ -1,5 +1,3 @@
-require "graphql/client"
-require "graphql/client/http"
 require "pry"
 
 require_relative "lib/dictionary_collection"
