@@ -62,8 +62,24 @@ class Classifier
     end
   end
 
+  def id_in_classification(id, classification)
+    matches = @classifications[classification.to_sym]
+    if matches != nil
+      matches.include?(id)
+    else
+      false
+    end
+  end
+
   def to_s
-    "The results of analyzing each item leads us to classify them as follows: #{@classifications}"
+    string = "The results of analyzing each item leads us to classify them as follows: "
+    @classifications.keys.each do |classification_key|
+      matches = @classifications[classification_key]
+      if matches.length > 0
+        string += "#{classification_key.upcase}: [#{matches.join(", ")}] "
+      end
+    end
+    string.strip
   end
 
 end
