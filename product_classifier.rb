@@ -4,7 +4,12 @@ require_relative "lib/dictionary_collection"
 require_relative "lib/classifier"
 require_relative "lib/tpt_graph"
 
-product_ids = File.open("data/products.txt").map { |line| line.to_i }
+product_ids = File.open("data/products.txt").lazy
+                                            .map(&:strip)
+                                            .reject(&:empty?)
+                                            .map(&:to_i)
+                                            .force
+
 products = TPT_GRAPH.fetch_products(product_ids)
 
 classification_dictionary = DictionaryCollection.new
