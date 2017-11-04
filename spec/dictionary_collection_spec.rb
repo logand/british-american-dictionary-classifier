@@ -1,7 +1,6 @@
 require "classifier"
 require "dictionary_collection"
 require "ostruct"
-require "pry"
 
 require_relative "fixtures"
 

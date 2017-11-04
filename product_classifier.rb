@@ -1,5 +1,3 @@
-require "pry"
-
 require_relative "lib/dictionary_collection"
 require_relative "lib/classifier"
 require_relative "lib/tpt_graph"
