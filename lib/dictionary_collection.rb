@@ -2,28 +2,31 @@ require "httparty"
 require "linguistics"
 
 class DictionaryCollection
-
   GIST_URL = "https://gist.github.com/mdg/aa4c9070ff3dbeaa5d4613cba05c2faf"
   DICTIONARY_LOOKUPS = {
     "british": { name: "british", path: "/raw/british-words.txt" },
     "american": { name: "american", path: "/raw/american-words.txt" }
   }
 
-  def initialize
+  def initialize(word_lists = nil)
     @dictionaries = {}
 
     Linguistics.use( :en )
-    DICTIONARY_LOOKUPS.values.each { |lookup_object| initialize_dictionary(lookup_object) }
+    if word_lists.nil?
+      DICTIONARY_LOOKUPS.values.each { |lookup_object| initialize_dictionary(lookup_object) }
+    else
+      word_lists.each { |dict_obj| initialize_dictionary(dict_obj, true) }
+    end
   end
 
   def get_dictionary_list
     @dictionaries.keys
   end
 
-  def initialize_dictionary(lookup_object)
+  def initialize_dictionary(lookup_object, premade_word_list = false)
     dictionary = @dictionaries[lookup_object[:name]]
     if dictionary.nil? || dictionary.empty?
-      word_list = fetch_word_list(lookup_object[:path], lookup_object[:path])
+      word_list = premade_word_list ? lookup_object[:dictionary] : fetch_word_list(lookup_object[:path], lookup_object[:path])
       dictionary = generate_dictionary(word_list)
       @dictionaries[lookup_object[:name]] = dictionary
     end
